@@ -1,4 +1,7 @@
-import scrapy, json
+import scrapy
+import json
+import requests
+from bs4 import BeautifulSoup
 
 
 class QuotesSpider(scrapy.Spider):
@@ -10,7 +13,12 @@ class QuotesSpider(scrapy.Spider):
     def parse(self, response):
         listing_page_res = self.listing_page(response)
         for i in listing_page_res:
-            yield response.follow(i['lot_detail_page'], self.detail_page)
+            detail_page_dom = requests.get(
+                'https://catalog.antiquorum.swiss' + i['lot_detail_page']).text
+            detail_page_soup = BeautifulSoup(detail_page_dom, "html.parser")
+            detail_page_res = self.detail_page(detail_page_soup)
+            for i in detail_page_res:
+                yield i
 
         # # Navigate to next page.
         # next_page = response.css('span.next a::attr("href")').extract_first()
@@ -29,16 +37,10 @@ class QuotesSpider(scrapy.Spider):
 
         return res
 
-    def detail_page(self, response):
-        for i in response.css('div.col-xs-12.col-md-6'):
-            if i is not None:
-                res = {
-                    'lot_number': i.css('h3::text').extract_first(),
-                    'type': str(type(i.css('h3::text').extract_first()))
-                }
-            else:
-                res = {
-                    'res': False
-                }
+    def detail_page(self, soup):
+        res = []
+        res.append({
+            'type': soup.h3.get_text().strip()
+        })
 
         return res
