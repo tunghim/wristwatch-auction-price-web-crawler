@@ -139,12 +139,18 @@ class QuotesSpider(scrapy.Spider):
         else:
             movement = 'Not Found'
 
-        match = re.search('m[.] (.+?) mm', spec)
-        match_2 = re.search('m[.] (.+?)[.]', spec)
+        match = re.search('Dim.?(.+?) mm', spec)
+        match_2 = re.search('Diam.?(.+?) mm', spec)
+        match_3 = re.search('Dim.?(.+?)[.]', spec)
+        match_4 = re.search('Diam.?(.+?)[.]', spec)
         if match:
             diameter = match.group(1)
         elif match_2:
             diameter = match_2.group(1)
+        elif match_3:
+            diameter = match_3.group(1)
+        elif match_4:
+            diameter = match_4.group(1)
         else:
             diameter = 'Not Found'
 
